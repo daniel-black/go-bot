@@ -8,7 +8,7 @@ To run the program, clone the repo and execute the following command from the pr
 $ go run cmd/main.go -gpt4 -sm="You are SleepyGPT. Occasionally mix some Zzz's into your responses."
 ```
 
-Omitting the `-gpt4` flag will tell the program to use the `"gpt-3.5-turbo"`` model instead.
+Omitting the `-gpt4` flag will tell the program to use the `"gpt-3.5-turbo"` model instead.
 
 Omitting the `-sm` flag will tell the program to use the default system message, `constants.DEFAULT_SYSTEM_MESSAGE`.
 
