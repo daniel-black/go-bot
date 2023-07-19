@@ -13,42 +13,47 @@ import (
 )
 
 type App struct {
-	Client *openaiclient.OpenAIClient
+	Client        *openaiclient.OpenAIClient
+	SystemMessage string
 }
 
-func NewApp(client *openaiclient.OpenAIClient) *App {
+func NewApp(client *openaiclient.OpenAIClient, systemMessage string) *App {
 	return &App{
-		Client: client,
+		Client:        client,
+		SystemMessage: systemMessage,
 	}
 }
 
 func (app *App) Run() {
 	reader := bufio.NewReader(os.Stdin)
-	messages := make([]models.Message, 0, 10)
+	messages := []models.Message{
+		{
+			Role:    "system",
+			Content: app.SystemMessage,
+		},
+	}
 
 	for {
 		// take user input
-		fmt.Print("Me: ")
+		fmt.Print("Me:\n")
 		userMessageContent, err := reader.ReadString('\n')
 		if err != nil {
 			os.Exit(1)
 		}
 
-		if userMessageContent == "bye" {
+		// Exit if the user says bye
+		if userMessageContent == "bye\n" {
 			fmt.Println("Goodbye!")
 			os.Exit(0)
 		}
 
 		fmt.Print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
-		// construct the user message
-		userMessage := models.Message{
+		// append user message to the slice of messages
+		messages = append(messages, models.Message{
 			Role:    "user",
 			Content: userMessageContent,
-		}
-
-		// append it to the slice of messages
-		messages = append(messages, userMessage)
+		})
 
 		// make the request
 		resp, err := app.Client.MakeChatRequest(messages)
@@ -85,7 +90,7 @@ func (app *App) Run() {
 		aiMessage := chatResponse.Choices[0].Message
 
 		// print the AI response
-		fmt.Printf("AI: %s\n", aiMessage.Content)
+		fmt.Printf("AI:\n%s\n", aiMessage.Content)
 		fmt.Print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
 
 		// append new message to messages slice
