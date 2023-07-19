@@ -3,14 +3,18 @@ package main
 import (
 	"flag"
 	"go-bot/pkg/app"
-	"go-bot/pkg/constants"
+	c "go-bot/pkg/constants"
 	"go-bot/pkg/openaiclient"
+	"net/http"
 )
 
+// Ex: go run cmd/main.go -gpt -temp=0.8 -max=1000 -sm="You are a pro programmer. help me."
 func main() {
 	// Optional flags can specify model and system message
-	isGpt4Ptr := flag.Bool("gpt4", false, "Is the model using gpt-4? If not, it will use gpt-3.5-turbo.")
-	systemMessagePtr := flag.String("sm", constants.DEFAULT_SYSTEM_MESSAGE, "A system message to seed the AI with.")
+	isGpt4Ptr := flag.Bool("gpt4", false, c.IS_GPT_4_USAGE)
+	tempPtr := flag.Float64("temp", c.DEFAULT_TEMP, c.TEMP_USAGE)
+	maxPtr := flag.Int("max", c.DEFAULT_MAX, c.MAX_USAGE)
+	systemMessagePtr := flag.String("sm", c.DEFAULT_SYSTEM_MESSAGE, c.SYSTEM_MESSAGE_USAGE)
 
 	// Parse the flags
 	flag.Parse()
@@ -18,13 +22,20 @@ func main() {
 	// Determine which model to use
 	var model string
 	if *isGpt4Ptr {
-		model = constants.GPT_4
+		model = c.GPT_4
 	} else {
-		model = constants.GPT_3_5
+		model = c.GPT_3_5
 	}
 
 	// Create a new OpenAIClient
-	openAIClient := openaiclient.NewOpenAIClient(constants.API_URL, constants.API_Key, model)
+	openAIClient := &openaiclient.OpenAIClient{
+		BaseURL:     c.API_URL,
+		HTTPClient:  &http.Client{},
+		APIKey:      c.API_Key,
+		Model:       model,
+		Temperature: *tempPtr,
+		MaxTokens:   *maxPtr,
+	}
 
 	// Create a new App
 	application := app.NewApp(openAIClient, *systemMessagePtr)

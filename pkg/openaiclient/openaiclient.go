@@ -9,26 +9,32 @@ import (
 )
 
 type OpenAIClient struct {
-	BaseURL    string
-	HTTPClient *http.Client
-	APIKey     string
-	Model      string
+	BaseURL     string
+	HTTPClient  *http.Client
+	APIKey      string
+	Model       string
+	Temperature float64
+	MaxTokens   int
 }
 
-func NewOpenAIClient(baseURL, apiKey, model string) *OpenAIClient {
+func NewOpenAIClient(baseURL, apiKey, model string, temp float64, maxTokens int) *OpenAIClient {
 	return &OpenAIClient{
-		BaseURL:    baseURL,
-		HTTPClient: &http.Client{},
-		APIKey:     apiKey,
-		Model:      model,
+		BaseURL:     baseURL,
+		HTTPClient:  &http.Client{},
+		APIKey:      apiKey,
+		Model:       model,
+		Temperature: temp,
+		MaxTokens:   maxTokens,
 	}
 }
 
 func (c *OpenAIClient) MakeChatRequest(messages []models.Message) (*http.Response, error) {
 	// Create request body object
 	body := models.ChatRequest{
-		Model:    c.Model,
-		Messages: messages,
+		Model:       c.Model,
+		Messages:    messages,
+		Temperature: c.Temperature,
+		MaxTokens:   c.MaxTokens,
 	}
 
 	// Marshal request body into JSON
